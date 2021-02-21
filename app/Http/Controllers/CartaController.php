@@ -6,6 +6,7 @@ use App\Models\Carta;
 use App\Models\Coleccion;
 use App\Models\IndiceColeccion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class CartaController extends Controller
 {
@@ -120,33 +121,69 @@ class CartaController extends Controller
         $precio = 0;
         $cantidad = 0;
 
+        Log::debug("Request: ".$request);
+
         $datos = $request->getContent();
         $datos = json_decode($datos);
 
-        $cartaId = Carta::where('nombre', $datos->nombre)->value('id');
-        $carta = Carta::find($cartaId);
+        //Comprueba que existan datos en la respuesta, y si los hay, que contengan el atributo 'nombre'
+        if (!$datos || !isset($datos->nombre)){
+            $respuesta = "Debes introducir el nombre de la carta.";
 
-        $busqueda = [];
+            Log::error("No se ha introducido el nombre de ninguna carta.");
 
-        foreach($carta->indice as $indice){
-            $coleccionNombre = $indice->coleccion->nombre;
+            return response ($respuesta);
+
+        //En el caso de que haya datos y 'nombre':
+        } else {
+
+            $cartaId = Carta::where('nombre', $datos->nombre)->value('id');
+            $carta = Carta::find($cartaId);
+
+            Log::info("ID de la carta: ".$cartaId);
+            Log::info("Carta: ".$carta);
+
+            //Si no encuentra ninguna carta por ese nombre:
+            if (!$cartaId){
+                $respuesta = "No existe esa carta.";
+
+                Log::debug ("No existe la carta");
+
+                return response ($respuesta);
+
+            //Si encuentra la carta:
+            } else { 
+
+                $busqueda = [];
+
+                foreach($carta->indice as $indice){
+                    $coleccionNombre = $indice->coleccion->nombre;
+
+                    Log::info("Nombre de colección: ".$coleccionNombre);
+                }
+                
+                foreach($carta->venta as $venta){
+                    $precio = $venta->precio;
+                    $cantidad = $venta->cantidad;
+
+                    Log::info("Precio de la carta: ".$precio);
+                    Log::info("Cantidad de cartas: ".$cantidad);
+                }
+
+                $busqueda[] = [
+                    "ID" => $carta->id,
+                    "Nombre" => $carta->nombre,
+                    "Descripcion" => $carta->descripcion,
+                    "Coleccion" => $coleccionNombre,
+                    "Cantidad" => $cantidad,
+                    "Precio Total" => $precio,
+                ];
+
+                Log::info("El resultado de la búsqueda es: ".json_encode($busqueda));
+
+                return response($busqueda);
+            }
         }
-        foreach($carta->venta as $venta){
-            $precio = $venta->precio;
-            $cantidad = $venta->cantidad;
-        }
-
-        $busqueda[] = [
-            "ID" => $carta->id,
-            "Nombre" => $carta->nombre,
-            "Descripcion" => $carta->descripcion,
-            "Coleccion" => $coleccionNombre,
-            "Cantidad" => $cantidad,
-            "Precio Total" => $precio,
-        ];
-
-        return response($busqueda);
-
     }
 
     /**

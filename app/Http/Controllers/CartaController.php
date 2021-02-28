@@ -51,8 +51,8 @@ class CartaController extends Controller
         $respuesta = "";
         $bCartaAlmacenada = false;
 
-        $datos = $request->getContent();
-        $datos = json_decode($datos);
+       /* $datos = $request->getContent();
+        $datos = json_decode($datos);*/
 
         $carta = new Carta();
         $cartas = Carta::all();
@@ -62,10 +62,10 @@ class CartaController extends Controller
 
         $indice = new IndiceColeccion();
 
-        if($datos){
+        if($request){
 
             foreach($cartas as $cartaAlmacenada){
-                if($datos->nombre == $cartaAlmacenada->nombre){
+                if($request->nombre == $cartaAlmacenada->nombre){
                     $bCartaAlmacenada = true;
                 }
             }
@@ -73,11 +73,11 @@ class CartaController extends Controller
             if ($bCartaAlmacenada){
                 $respuesta = "La carta ya existe.";
             }else{
-                $carta->nombre = $datos->nombre;
-                $carta->descripcion = $datos->descripcion;
+                $carta->nombre = $request->nombre;
+                $carta->descripcion = $request->descripcion;
 
                 foreach($colecciones as $coleccionAlmacenada){
-                    if ($datos->nombreColeccion == $coleccionAlmacenada->nombre){
+                    if ($request->nombreColeccion == $coleccionAlmacenada->nombre){
 
                         $coleccionAlmacenadaID = $coleccionAlmacenada->id;
                     }
@@ -90,7 +90,7 @@ class CartaController extends Controller
                         $indice->coleccion_id = $coleccionAlmacenadaID;
                         $respuesta = "La carta se ha dado de alta.";
                     }else{
-                        $coleccion->nombre = $datos->nombreColeccion;
+                        $coleccion->nombre = $request->nombreColeccion;
                         $coleccion->save();
                         $indice->coleccion_id = $coleccion->id;
                         $respuesta = "La carta se ha dado de alta, junto a su colección."; 
@@ -123,11 +123,11 @@ class CartaController extends Controller
 
         Log::debug("Request: ".$request);
 
-        $datos = $request->getContent();
-        $datos = json_decode($datos);
+       /* $datos = $request->getContent();
+        $datos = json_decode($datos);*/
 
         //Comprueba que existan datos en la respuesta, y si los hay, que contengan el atributo 'nombre'
-        if (!$datos || !isset($datos->nombre)){
+        if (!$request || !isset($request->nombre)){
             $respuesta = "Debes introducir el nombre de la carta.";
 
             Log::error("No se ha introducido el nombre de ninguna carta.");
@@ -137,7 +137,7 @@ class CartaController extends Controller
         //En el caso de que haya datos y 'nombre':
         } else {
 
-            $cartaId = Carta::where('nombre', $datos->nombre)->value('id');
+            $cartaId = Carta::where('nombre', $request->nombre)->value('id');
             $carta = Carta::find($cartaId);
 
             Log::info("ID de la carta: ".$cartaId);
@@ -181,7 +181,7 @@ class CartaController extends Controller
 
                 Log::info("El resultado de la búsqueda es: ".json_encode($busqueda));
 
-                return response($busqueda);
+                return view('search')->with('cartas', $busqueda);
             }
         }
     }

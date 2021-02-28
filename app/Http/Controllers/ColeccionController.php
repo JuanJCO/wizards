@@ -41,8 +41,8 @@ class ColeccionController extends Controller
         $respuesta = "";
         $bColeccionAlmacenada = false;
 
-        $datos = $request->datos;
-        $datos = json_decode($datos);
+        /*$datos = $request->datos;
+        $datos = json_decode($datos);*/
 
         $colecciones = Coleccion::all();
         $coleccion = new Coleccion();
@@ -52,10 +52,10 @@ class ColeccionController extends Controller
 
         $indice = new IndiceColeccion();
 
-        if($datos){
+        if($request){
 
             foreach ($colecciones as $coleccionAlmacenada) {
-                if ($datos->nombre == $coleccionAlmacenada->nombre){
+                if ($request->nombre == $coleccionAlmacenada->nombre){
                     $bColeccionAlmacenada = true;
                 }
             }
@@ -63,10 +63,10 @@ class ColeccionController extends Controller
             if ($bColeccionAlmacenada) {
                 $respuesta = "La colección ya existe.";
             }else{
-                $coleccion->nombre = $datos->nombre;
+                $coleccion->nombre = $request->nombre;
 
                 foreach($cartas as $cartaAlmacenada){
-                    if ($datos->nombreCarta == $cartaAlmacenada->nombre){
+                    if ($request->nombreCarta == $cartaAlmacenada->nombre){
 
                         $cartaAlmacenadaID = $cartaAlmacenada->id;
                     }
@@ -87,8 +87,8 @@ class ColeccionController extends Controller
                         $respuesta = "La coleccion se ha dado de alta.";
 
                     }else{
-                        $carta->nombre = $datos->nombreCarta;
-                        $carta->descripcion = $datos->descripcionCarta;
+                        $carta->nombre = $request->nombreCarta;
+                        $carta->descripcion = $request->descripcionCarta;
                         $carta->save();
                         $indice->carta_id = $carta->id;
                         $respuesta = "La coleccion se ha dado de alta, junto a su primera carta.";

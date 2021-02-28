@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Usuario;
+use App\Models\Venta;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -33,7 +35,7 @@ class UsuarioController extends Controller
 
         $respuesta = "";
 
-        $usuario = Usuario::whereEmail(json_decode($request->getContent()))->first();
+        $usuario = Usuario::whereEmail($request->email)->first();
 
         if ($usuario){
             $randomPassword = uniqid();
@@ -59,17 +61,17 @@ class UsuarioController extends Controller
         
         $respuesta = "";
 
-        $datos = $request->getContent();
-        $datos = json_decode($datos);
+        /*$datos = $request->getContent();
+        $datos = json_decode($datos);*/
 
-        if($datos){
+        if($request){
 
             $usuario = new Usuario();
 
-            $usuario->nombre = $datos->nombre;
-            $usuario->email = $datos->email;
-            $usuario->password = Hash::make($datos->password);
-            $usuario->rango = $datos->rango;
+            $usuario->nombre = $request->nombre;
+            $usuario->email = $request->email;
+            $usuario->password = Hash::make($request->password);
+            $usuario->rango = $request->rango;
 
             try{
                 $usuario->save();
@@ -88,9 +90,6 @@ class UsuarioController extends Controller
     {
         $respuesta = "";
 
-        $datos = $request->getContent();
-        $datos = json_decode($datos);
-
         $usuario = Usuario::whereEmail($request->email)->first();
 
         if($usuario && Hash::check($request->password, $usuario->password)){
@@ -104,7 +103,7 @@ class UsuarioController extends Controller
             $respuesta = "Datos incorrectos.";
         }
 
-        return response($respuesta);
+        return response($respuesta)->withCookie('token', $token);
     }
 
     /**
@@ -116,6 +115,15 @@ class UsuarioController extends Controller
     public function show(Usuario $usuario)
     {
         //
+    }
+
+    public function logout(Request $request){
+
+        $ventas = Venta::latest()->take(10)->get();
+
+        $token;
+
+        return view('index')->with('ventas', $ventas)->withCookie('token', $token);
     }
 
     /**

@@ -28,6 +28,7 @@ Route::prefix('usuarios')->group(function () {
 	Route::post('/login',[UsuarioController::class,"login"]);
 	Route::post('/resetpass',[UsuarioController::class,"recuperarPassword"]);
 	Route::post('/venta',[VentaController::class,"store"])->middleware('venta');
+	Route::get('/logout',[UsuarioController::class,"logout"]);
 });
 
 Route::prefix('cartas')->group(function () {

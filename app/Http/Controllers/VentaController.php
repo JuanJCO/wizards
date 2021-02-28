@@ -38,16 +38,13 @@ class VentaController extends Controller
     {
         $respueta = "";
 
-        $datos = $request->getContent();
-        $datos = json_decode($datos);
-
         $apiToken = $request->bearerToken();
 
         $venta = new Venta();
 
         $usuarios = Usuario::All();
 
-        if ($datos){
+        if ($request){
 
             foreach ($usuarios as $usuario) {
                 if ($usuario->api_token == $apiToken){
@@ -56,9 +53,9 @@ class VentaController extends Controller
                 }
             }
 
-            $venta->carta_id = $datos->carta_id;
-            $venta->cantidad = $datos->cantidad;
-            $venta->precio = $datos->precio;
+            $venta->carta_id = $request->carta_id;
+            $venta->cantidad = $request->cantidad;
+            $venta->precio = $request->precio;
             $venta->usuario_id = $usuarioID;
 
             try{

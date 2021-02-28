@@ -18,7 +18,7 @@ class CheckUsers
     public function handle(Request $request, Closure $next)
     {
 
-        $apiToken = $request->bearerToken();
+        $apiToken = $request->cookie('token');
 
         $usuario = Usuario::where('api_token', $apiToken)->first();
 
